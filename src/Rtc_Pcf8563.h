@@ -48,7 +48,7 @@
 #include "Arduino.h"
 #include "Wire.h"
 
-#define RTCC_VERSION  "Pcf8563 v1.0.3"
+#define RTCC_VERSION  "Pcf8563 v1.0.3 akr"
 
 /* the read and write values for pcf8563 rtcc */
 /* these are adjusted for arduino */
