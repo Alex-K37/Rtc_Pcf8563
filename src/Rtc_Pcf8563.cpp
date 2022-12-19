@@ -200,6 +200,32 @@ boolean Rtc_Pcf8563::alarmActive()
     return Rtc_Pcf8563::readStatus2() & RTCC_ALARM_AF;
 }
 
+/*
+* Returns true if TIE is on
+*
+*/
+boolean Rtc_Pcf8563::timerEnabled(uint8_t status2)
+{
+    return status2 & RTCC_TIMER_TIE;
+}
+boolean Rtc_Pcf8563::timerEnabled()
+{
+  return timerEnabled(Rtc_Pcf8563::readStatus2());
+}
+
+/*
+* Returns true if TF is on
+*
+*/
+boolean Rtc_Pcf8563::timerActive(uint8_t status2)
+{
+    return status2 & RTCC_TIMER_TF;
+}
+boolean Rtc_Pcf8563::timerActive()
+{
+  return timerActive(Rtc_Pcf8563::readStatus2());
+}
+
 
 /* set the alarm values
  * whenever the clock matches these values an int will
@@ -304,6 +330,37 @@ void Rtc_Pcf8563::clearSquareWave()
 }
 
 /**
+* Set the timer pin output
+*/
+void Rtc_Pcf8563::setTimer(uint8_t frequency, uint8_t period)
+{
+    Wire.beginTransmission(Rtcc_Addr);    // Issue I2C start signal
+    Wire.send((TIMER_ENABLE|frequency)&TIMER_MASK);
+    Wire.send(period);
+    Wire.endTransmission();
+    resetTimer();
+}
+
+void Rtc_Pcf8563::clearTimer()
+{
+    Wire.beginTransmission(Rtcc_Addr);    // Issue I2C start signal
+    Wire.send(TIMER_1MIN&TIMER_MASK);
+    Wire.endTransmission();
+}
+
+void Rtc_Pcf8563::resetTimer()
+{
+    status2 = readStatus2();
+    status2 |= RTCC_STATUS2_FDEFAULT;
+    status2 &= ~RTCC_TIMER_TF;
+    Wire.beginTransmission(Rtcc_Addr);
+    Wire.send(RTCC_STAT2_ADDR);
+    Wire.send(status2); // bits not to be reset 
+    Wire.endTransmission();
+}
+
+
+/**
 * Reset the alarm leaving interrupt unchanged
 */
 void Rtc_Pcf8563::resetAlarm()
@@ -377,7 +434,8 @@ void Rtc_Pcf8563::getTime()
 }
 
 char *Rtc_Pcf8563::version(){
-  return RTCC_VERSION;  
+  static char v[] = RTCC_VERSION;
+  return v;  
 }
 
 char *Rtc_Pcf8563::formatTime(byte style)

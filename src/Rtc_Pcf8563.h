@@ -76,6 +76,7 @@
 #define RTCC_YEAR_ADDR          0x08
 #define RTCC_ALRM_MIN_ADDR      0x09
 #define RTCC_SQW_ADDR           0x0D
+#define RTCC_TIMER_ADDR         0x0E
 
 /* setting the alarm flag to 0 enables the alarm.
  * set it to 1 to disable the alarm for that value.
@@ -103,10 +104,21 @@
 #define SQW_32HZ        B10000010
 #define SQW_1HZ         B10000011
 
-
 /* arduino class */
 class Rtc_Pcf8563 {
     public:
+  const uint8_t RTCC_STATUS2_FDEFAULT=0xC;
+/* timer constants */
+  const uint8_t RTCC_TIMER_TIE=0x01;
+  const uint8_t RTCC_TIMER_TF =0x04;
+  const uint8_t TIMER_4096k=0x0;
+  const uint8_t TIMER_64HZ =0x01;
+  const uint8_t TIMER_1HZ  =0x02;
+  const uint8_t TIMER_1MIN =0x03;
+  const uint8_t TIMER_MASK =0x83;
+  const uint8_t TIMER_ENABLE=0x80;
+
+
         Rtc_Pcf8563();
 
         void initClock();   /* zero out all values, disable all alarms */
@@ -120,6 +132,10 @@ class Rtc_Pcf8563 {
         byte readStatus2();
         boolean alarmEnabled();
         boolean alarmActive();
+        boolean timerEnabled(uint8_t status2);
+        boolean timerActive(uint8_t status2);
+        boolean timerEnabled();
+        boolean timerActive();
 
         void enableAlarm(); /* activate alarm flag and interrupt */
         void setAlarm(byte min, byte hour, byte day, byte weekday); /* set alarm vals, 99=ignore */
@@ -127,7 +143,10 @@ class Rtc_Pcf8563 {
         void resetAlarm();  /* clear alarm flag but leave interrupt unchanged */
         void setSquareWave(byte frequency);
         void clearSquareWave();
-
+        void setTimer(uint8_t frequency, uint8_t period);
+        void clearTimer();
+        void resetTimer();
+  
         byte getSecond();
         byte getMinute();
         byte getHour();
